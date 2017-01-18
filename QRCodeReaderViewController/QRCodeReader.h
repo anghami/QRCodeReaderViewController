@@ -59,6 +59,8 @@
  */
 + (nonnull instancetype)readerWithMetadataObjectTypes:(nonnull NSArray *)metadataObjectTypes;
 
++ (nonnull instancetype)readerForStillPicture;
+
 #pragma mark - Checking the Reader Availabilities
 /** @name Checking the Reader Availabilities */
 
@@ -148,6 +150,8 @@
  * @since 4.0.0
  */
 - (void)toggleTorch;
+
+- (void)takeStillPictureWithCallback:(nonnull void (^) (NSData * _Nullable imageData))callback;
 
 #pragma mark - Getting Inputs and Outputs
 /** @name Getting Inputs and Outputs */

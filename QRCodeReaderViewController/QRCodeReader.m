@@ -35,6 +35,8 @@
 @property (strong, nonatomic) AVCaptureSession           *session;
 @property (strong, nonatomic) AVCaptureVideoPreviewLayer *previewLayer;
 
+@property (nonatomic, strong) AVCaptureStillImageOutput * stillImageOutput;
+
 @property (copy, nonatomic) void (^completionBlock) (NSString *);
 
 @end
@@ -63,6 +65,21 @@
   return self;
 }
 
+- (id)initForStillPicture
+{
+  self = [self initWithMetadataObjectTypes:@[]];
+  if (self) {
+    self.stillImageOutput = [[AVCaptureStillImageOutput alloc] init];
+    [self.session addOutput:self.stillImageOutput];
+  }
+  return self;
+}
+
++ (instancetype)readerForStillPicture
+{
+    return [[self alloc] initForStillPicture];
+}
+
 + (instancetype)readerWithMetadataObjectTypes:(NSArray *)metadataObjectTypes
 {
   return [[self alloc] initWithMetadataObjectTypes:metadataObjectTypes];
@@ -76,7 +93,9 @@
 
   if (_defaultDevice) {
     self.defaultDeviceInput = [AVCaptureDeviceInput deviceInputWithDevice:_defaultDevice error:nil];
-    self.metadataOutput     = [[AVCaptureMetadataOutput alloc] init];
+    if (_metadataObjectTypes.count > 0) {
+      self.metadataOutput     = [[AVCaptureMetadataOutput alloc] init];
+    }
     self.session            = [[AVCaptureSession alloc] init];
     self.previewLayer       = [AVCaptureVideoPreviewLayer layerWithSession:self.session];
 
@@ -94,17 +113,21 @@
 
 - (void)configureDefaultComponents
 {
-  [_session addOutput:_metadataOutput];
+  if(_metadataOutput) {
+    [_session addOutput:_metadataOutput];
+  }
 
   if (_defaultDeviceInput) {
     [_session addInput:_defaultDeviceInput];
   }
 
   [_metadataOutput setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
-  NSMutableSet *available = [NSMutableSet setWithArray:[_metadataOutput availableMetadataObjectTypes]];
-  NSSet *desired = [NSSet setWithArray:_metadataObjectTypes];
-  [available intersectSet:desired];
-  [_metadataOutput setMetadataObjectTypes:available.allObjects];
+  if (_metadataObjectTypes.count > 0) {
+    NSMutableSet *available = [NSMutableSet setWithArray:[_metadataOutput availableMetadataObjectTypes]];
+    NSSet *desired = [NSSet setWithArray:_metadataObjectTypes];
+    [available intersectSet:desired];
+    [_metadataOutput setMetadataObjectTypes:available.allObjects];
+  }
   [_previewLayer setVideoGravity:AVLayerVideoGravityResizeAspectFill];
 }
 
@@ -146,6 +169,15 @@
   }
   
   [_defaultDevice unlockForConfiguration];
+}
+
+- (void)takeStillPictureWithCallback:(void (^)(NSData * _Nullable imageData))callback
+{
+  AVCaptureConnection * connection = [self.stillImageOutput connectionWithMediaType:AVMediaTypeVideo];
+  [self.stillImageOutput captureStillImageAsynchronouslyFromConnection:connection completionHandler:^(CMSampleBufferRef imageDataSampleBuffer, NSError *error) {
+    NSData * data = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageDataSampleBuffer];
+    callback(data);
+  }];
 }
 
 #pragma mark - Controlling Reader
