@@ -29,6 +29,8 @@
 @interface QRCodeReaderView ()
 @property (nonatomic, strong) CAShapeLayer *overlay;
 
+@property (nonatomic, strong) NSArray<UIView *> * overlayViews;
+
 @end
 
 @implementation QRCodeReaderView
@@ -37,9 +39,41 @@
 {
   if ((self = [super initWithFrame:frame])) {
     [self addOverlay];
+    [self addOverlayViews];
   }
 
   return self;
+}
+
+- (void)addOverlayViews
+{
+  NSMutableArray<UIView *> * overlayViews = [[NSMutableArray alloc] initWithCapacity:4];
+  for (int i = 0; i < 4; i++)
+  {
+    UIView * overlayView = [[UIView alloc] init];
+    overlayView.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.7];
+    [self addSubview:overlayView];
+    [overlayViews addObject:overlayView];
+  }
+  self.overlayViews = overlayViews;
+}
+
+- (void)layoutSubviews
+{
+  [super layoutSubviews];
+  CGFloat margin = 50;
+  CGFloat width = self.bounds.size.width;
+  CGFloat height = self.bounds.size.height;
+  CGRect innerRect = CGRectInset(self.bounds, margin, margin);
+  CGFloat minSize = MIN(innerRect.size.width, innerRect.size.height);
+  CGFloat hMargin = (width - minSize)/2;;
+  CGFloat vMargin = (height - minSize)/2;
+  CGFloat yOffset = 15;
+    
+  self.overlayViews[0].frame = CGRectMake(0, 0, width, vMargin+yOffset); // top
+  self.overlayViews[1].frame = CGRectMake(0, height-vMargin+yOffset, width, vMargin+yOffset); // bottom
+  self.overlayViews[2].frame = CGRectMake(0, vMargin+yOffset, hMargin, height-vMargin*2); // left
+  self.overlayViews[3].frame = CGRectMake(width-hMargin, vMargin+yOffset, hMargin, height-vMargin*2); // right
 }
 
 - (void)drawRect:(CGRect)rect
