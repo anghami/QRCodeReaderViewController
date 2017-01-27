@@ -26,6 +26,8 @@
 
 #import "QRCodeReader.h"
 
+static const int ddLogLevel = LOG_LEVEL_VERBOSE;
+
 @interface QRCodeReader () <AVCaptureMetadataOutputObjectsDelegate>
 @property (strong, nonatomic) AVCaptureDevice            *defaultDevice;
 @property (strong, nonatomic) AVCaptureDeviceInput       *defaultDeviceInput;
@@ -175,6 +177,11 @@
 {
   AVCaptureConnection * connection = [self.stillImageOutput connectionWithMediaType:AVMediaTypeVideo];
   [self.stillImageOutput captureStillImageAsynchronouslyFromConnection:connection completionHandler:^(CMSampleBufferRef imageDataSampleBuffer, NSError *error) {
+    if (imageDataSampleBuffer == NULL || error) {
+        DDLogVerbose(@"[%@] error capturing image: %@", THIS_FILE, error);
+        callback(nil);
+        return;
+    }
     NSData * data = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageDataSampleBuffer];
     callback(data);
   }];
