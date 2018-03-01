@@ -26,8 +26,6 @@
 
 #import "QRCodeReader.h"
 
-static const int ddLogLevel = LOG_LEVEL_VERBOSE;
-
 @interface QRCodeReader () <AVCaptureMetadataOutputObjectsDelegate>
 @property (strong, nonatomic) AVCaptureDevice            *defaultDevice;
 @property (strong, nonatomic) AVCaptureDeviceInput       *defaultDeviceInput;
