@@ -51,7 +51,7 @@
   for (int i = 0; i < 4; i++)
   {
     UIView * overlayView = [[UIView alloc] init];
-    overlayView.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.7];
+    overlayView.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.3];
     [self addSubview:overlayView];
     [overlayViews addObject:overlayView];
   }
